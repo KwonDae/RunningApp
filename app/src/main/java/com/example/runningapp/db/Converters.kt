@@ -18,7 +18,6 @@ class Converters {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
-
     // Bitmap -> ByteArray 변환
     @TypeConverter
     fun fromBitmap(bmp: Bitmap): ByteArray {
