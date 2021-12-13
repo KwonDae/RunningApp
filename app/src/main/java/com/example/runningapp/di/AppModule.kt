@@ -17,13 +17,14 @@ import javax.inject.Singleton
  * 어디서든 접근이 가능해야 하므로 Singleton 컴포넌트로 작성을 합니다.
  * 그리하여 Repository 모듈은 InstallIn(SingletonComponent::class)를 통해 싱글턴 모듈임을 나타내도록 합니다.
  */
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
     @Singleton
     @Provides
-    fun provideRunningdb(
+    fun provideRunningDatabase(
         @ApplicationContext app: Context
     ) = Room.databaseBuilder(
         app,
