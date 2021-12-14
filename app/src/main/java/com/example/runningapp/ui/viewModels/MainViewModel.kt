@@ -12,6 +12,9 @@ import javax.inject.Inject
  * @package com.example.runningapp.ui.viewModels
  * @email green201402317@gmail.com
  * @created 2021/12/13
+ *
+ * @HilteViewModel에서 @Inject 어노테이션이 붙은 생성자는 생성자 파라미터가
+ * Hilt에 의해 주입받을 거라고 정의내리는 종속성을 갖게 해준다.
  */
 
 @HiltViewModel
