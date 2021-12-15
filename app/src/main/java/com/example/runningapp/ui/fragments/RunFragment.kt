@@ -1,29 +1,19 @@
 package com.example.runningapp.ui.fragments
 
-import android.Manifest
 import android.Manifest.permission.*
-import android.app.AlertDialog
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.Size
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.runningapp.R
-import com.example.runningapp.other.Constants.REQUEST_CODE_BACKGROUND_LOCATION_PERMISSION
-import com.example.runningapp.other.Constants.REQUEST_CODE_LOCATION_PERMISSION
-import com.example.runningapp.other.Constants.TAG
-import com.example.runningapp.other.TrackingUtility
+import com.example.runningapp.util.Constants.REQUEST_CODE_BACKGROUND_LOCATION_PERMISSION
+import com.example.runningapp.util.Constants.REQUEST_CODE_LOCATION_PERMISSION
+import com.example.runningapp.util.Constants.TAG
 import com.example.runningapp.ui.viewModels.MainViewModel
 import com.vmadalin.easypermissions.EasyPermissions
-import com.vmadalin.easypermissions.annotations.AfterPermissionGranted
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_run.*
@@ -44,14 +34,32 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         super.onViewCreated(view, savedInstanceState)
 
         requestPermissions()
+
+        //플로팅 버튼이 클릭되면 Tracking 화면으로 이동
         fab.setOnClickListener {
-            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+            if (EasyPermissions.hasPermissions(
+                    requireContext(),
+                    ACCESS_COARSE_LOCATION,
+                    ACCESS_FINE_LOCATION,
+                    ACCESS_BACKGROUND_LOCATION
+                )
+            ) {
+                // 권한 체크 후 권한이 있을 때
+                    Log.d(TAG, "RunFragment - EasyPermissions called / granted")
+                findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+            } else {
+                // 권한 체크 후 없으면 권한 요청
+                    Log.d(TAG, "RunFragment - EasyPermissions called / deny")
+                requestPermissions()
+            }
         }
 
     }
 
+    // 권한 요청
     private fun requestPermissions() {
         //TODO requireContext()?
+        // 이미 권한이 있으면 리턴
         if (EasyPermissions.hasPermissions(
                 requireContext(),
                 ACCESS_COARSE_LOCATION,
@@ -59,8 +67,11 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
                 ACCESS_BACKGROUND_LOCATION
             )
         ) {
+            Log.d(TAG, "RunFragment - requestPermissions called / true")
             return
         } else {
+            Log.d(TAG, "RunFragment - requestPermissions called / false")
+            // SDK 29 부터 BACKGROUND_LOCATION 권한 필요
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 EasyPermissions.requestPermissions(
                     requireActivity(),
@@ -81,7 +92,8 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
 
     }
 
-    // 안드로이드 API 30 버전부터는 backgroundPermission 을 직접 설정해야함
+    // 안드로이드 API 29 버전부터는 backgroundPermission 을 직접 설정해야함
+    // 안드로이드11 부터는 항상 허용이 시스템 상자에서 사라졌다. 그래서 따로 설정으로 이동시켜야함.
     private fun backgroundPermission() {
         EasyPermissions.requestPermissions(
             requireActivity(),
@@ -106,6 +118,7 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
         Log.d(TAG, "onPermissionsGranted: $requestCode :${perms.size}")
     }
 
+    // 두 번 이상 거부하게 되면 시스템 상자가 뜨지 않는다.
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
         Log.d(TAG, "onPermissionsDenied: $requestCode :${perms.size}")
 
