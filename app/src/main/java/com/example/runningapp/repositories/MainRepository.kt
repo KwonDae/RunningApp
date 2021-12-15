@@ -11,6 +11,7 @@ import javax.inject.Inject
  * @created 2021/12/13
  */
 
+// 앱에서 사용하는 데이터와 그 데이터 통신을 하는 역할
 class MainRepository @Inject constructor(
     val runDao: RunDAO
 ){
