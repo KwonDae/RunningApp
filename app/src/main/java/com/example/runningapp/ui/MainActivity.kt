@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
         // 액티비티에서 어떤 액션바를 사용할지 설정한다.
         setSupportActionBar(toolbar)
+
         bottomNavigationView.setupWithNavController(navHostFragment.findNavController())
 
         navHostFragment.findNavController()

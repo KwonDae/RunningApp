@@ -7,5 +7,11 @@ package com.example.runningapp.other
  * @created 2021/12/13
  */
 object Constants {
+    const val TAG = "로그"
+
     const val RUNNING_DATABASE_NAME = "running_db"
+
+    const val REQUEST_CODE_LOCATION_PERMISSION = 0
+
+    const val REQUEST_CODE_BACKGROUND_LOCATION_PERMISSION = 1
 }
