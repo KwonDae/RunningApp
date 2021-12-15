@@ -13,10 +13,12 @@ import com.example.runningapp.util.Constants.REQUEST_CODE_BACKGROUND_LOCATION_PE
 import com.example.runningapp.util.Constants.REQUEST_CODE_LOCATION_PERMISSION
 import com.example.runningapp.util.Constants.TAG
 import com.example.runningapp.ui.viewModels.MainViewModel
+import com.example.runningapp.util.TrackingUtility
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_run.*
+import timber.log.Timber
 
 /**
  * @author Daewon
@@ -37,19 +39,13 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
 
         //플로팅 버튼이 클릭되면 Tracking 화면으로 이동
         fab.setOnClickListener {
-            if (EasyPermissions.hasPermissions(
-                    requireContext(),
-                    ACCESS_COARSE_LOCATION,
-                    ACCESS_FINE_LOCATION,
-                    ACCESS_BACKGROUND_LOCATION
-                )
-            ) {
+            if (TrackingUtility.hasLocationPermissions(requireContext())) {
                 // 권한 체크 후 권한이 있을 때
-                    Log.d(TAG, "RunFragment - EasyPermissions called / granted")
+                Timber.tag(TAG).d("RunFragment - EasyPermissions called / granted")
                 findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
             } else {
                 // 권한 체크 후 없으면 권한 요청
-                    Log.d(TAG, "RunFragment - EasyPermissions called / deny")
+                Timber.tag(TAG).d("RunFragment - EasyPermissions called / deny")
                 requestPermissions()
             }
         }
@@ -60,17 +56,11 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
     private fun requestPermissions() {
         //TODO requireContext()?
         // 이미 권한이 있으면 리턴
-        if (EasyPermissions.hasPermissions(
-                requireContext(),
-                ACCESS_COARSE_LOCATION,
-                ACCESS_FINE_LOCATION,
-                ACCESS_BACKGROUND_LOCATION
-            )
-        ) {
-            Log.d(TAG, "RunFragment - requestPermissions called / true")
+        if (TrackingUtility.hasLocationPermissions(requireContext())) {
+            Timber.tag(TAG).d("RunFragment - requestPermissions called / true")
             return
         } else {
-            Log.d(TAG, "RunFragment - requestPermissions called / false")
+            Timber.tag(TAG).d("RunFragment - requestPermissions called / false")
             // SDK 29 부터 BACKGROUND_LOCATION 권한 필요
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 EasyPermissions.requestPermissions(
