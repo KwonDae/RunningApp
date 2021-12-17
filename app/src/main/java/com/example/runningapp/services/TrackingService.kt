@@ -11,6 +11,7 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -27,6 +28,7 @@ import com.example.runningapp.util.Constants.LOCATION_UPDATE_INTERVAL
 import com.example.runningapp.util.Constants.NOTIFICATION_CHANNEL_ID
 import com.example.runningapp.util.Constants.NOTIFICATION_CHANNEL_NAME
 import com.example.runningapp.util.Constants.NOTIFICATION_ID
+import com.example.runningapp.util.Constants.TAG
 import com.example.runningapp.util.TrackingUtility
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -53,7 +55,9 @@ class TrackingService : LifecycleService() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     companion object {
+        // 위치 추적 상태 여부
         val isTracking = MutableLiveData<Boolean>()
+        // LatLng = 위도,경도
         val pathPoints = MutableLiveData<Polylines>()
     }
 
@@ -66,8 +70,11 @@ class TrackingService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationProviderClient = FusedLocationProviderClient(this)
+        postInitialValues()
 
+        // 위치추적 on일때 Observing
         isTracking.observe(this, Observer {
+            Timber.d("TrackingService - onCreate called / ")
             updateLocationTracking(it)
         })
     }
@@ -107,12 +114,13 @@ class TrackingService : LifecycleService() {
 
     @SuppressLint("MissingPermission")
     private fun updateLocationTracking(isTracking: Boolean) {
-        if(isTracking) {
-            if(TrackingUtility.hasLocationPermissions(this)) {
+        Timber.d("called")
+        if (isTracking) {
+            if (TrackingUtility.hasLocationPermissions(this)) {
                 val request = LocationRequest().apply {
-                    interval = LOCATION_UPDATE_INTERVAL
-                    fastestInterval = FASTEST_LOCATION_INTERVAL
-                    priority = PRIORITY_HIGH_ACCURACY
+                    interval = LOCATION_UPDATE_INTERVAL // 위치 업데이트 주기
+                    fastestInterval = FASTEST_LOCATION_INTERVAL // 가장 빠른 위치 업데이트 주기
+                    priority = PRIORITY_HIGH_ACCURACY // 배터리소모를 고려하지 않으며 정확도를 최우선으로 고려
                 }
                 fusedLocationProviderClient.requestLocationUpdates(
                     request,
@@ -125,6 +133,7 @@ class TrackingService : LifecycleService() {
         }
     }
 
+    // location(위치정보)수신해서 addPathPoint로 전달
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
@@ -139,6 +148,7 @@ class TrackingService : LifecycleService() {
         }
     }
 
+    // 위치정보(lat,lon) 추가
     private fun addPathPoint(location: Location?) {
         location?.let {
             val pos = LatLng(location.latitude, location.longitude)
@@ -152,10 +162,12 @@ class TrackingService : LifecycleService() {
         }
     }
 
+    // 빈 polyline 추가
     private fun addEmptyPolyline() = pathPoints.value?.apply {
         add(mutableListOf())
         pathPoints.postValue(this)
     } ?: pathPoints.postValue(mutableListOf(mutableListOf()))
+
 
     // Notification 등록, 서비스 시작
     private fun startForegroundService() {
