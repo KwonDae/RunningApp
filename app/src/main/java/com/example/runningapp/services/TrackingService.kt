@@ -35,11 +35,13 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * @author Daewon
@@ -52,11 +54,18 @@ typealias Polyline = MutableList<LatLng>
 typealias Polylines = MutableList<Polyline>
 
 // Noti 제공할 서비스
+@AndroidEntryPoint
 class TrackingService : LifecycleService() {
 
     var isFirstRun = true
 
+    @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    @Inject
+    lateinit var baseNotificationBuilder: NotificationCompat.Builder
+
+    lateinit var curNotificationBuilder: NotificationCompat.Builder
 
     private val timeRunInSeconds = MutableLiveData<Long>()
 
@@ -80,13 +89,15 @@ class TrackingService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        fusedLocationProviderClient = FusedLocationProviderClient(this)
+        curNotificationBuilder = baseNotificationBuilder
         postInitialValues()
+        fusedLocationProviderClient = FusedLocationProviderClient(this)
 
         // 위치추적 on일때 Observing
         isTracking.observe(this, Observer {
             Timber.d("TrackingService - onCreate called / ")
             updateLocationTracking(it)
+            updateNotificationTrackingState(it)
         })
     }
 
@@ -120,8 +131,14 @@ class TrackingService : LifecycleService() {
     }
 
     private var isTimerEnabled = false
+
+    // 실행시마다 지나간 시간을 저장하기 위한 변수
     private var lapTime = 0L
+
+    // 스탑워치를 실행한 총 시간 저장
     private var timeRun = 0L
+
+    // 실행 버튼을 눌렀을 때 시간
     private var timeStarted = 0L
     private var lastSecondTimestamp = 0L
 
@@ -139,6 +156,7 @@ class TrackingService : LifecycleService() {
 
         // coroutine
         // we don't want call of service all the time
+        // 메인 쓰레드에서 시간을 계속 관찰하고 있는건 성능이 좋지 않다.
         CoroutineScope(Dispatchers.Main).launch {
             while (isTracking.value!!) {
                 // time difference between now and timeStarted
@@ -146,7 +164,7 @@ class TrackingService : LifecycleService() {
 
                 // post the new laptime
                 timeRunInMillis.postValue(timeRun + lapTime)
-                if(timeRunInMillis.value!! >= lastSecondTimestamp + 1000L) {
+                if (timeRunInMillis.value!! >= lastSecondTimestamp + 1000L) {
                     timeRunInSeconds.postValue(timeRunInSeconds.value!! + 1)
                     lastSecondTimestamp += 1000L
                 }
@@ -159,6 +177,34 @@ class TrackingService : LifecycleService() {
     private fun pauseService() {
         isTracking.postValue(false)
         isTimerEnabled = false
+    }
+
+    private fun updateNotificationTrackingState(isTracking: Boolean) {
+        val notificationActionText = if (isTracking) "Pause" else "Resume"
+        val pendingIntent: PendingIntent = if (isTracking) {
+            val pauseIntent = Intent(this, TrackingService::class.java).apply {
+                action = ACTION_PAUSE_SERVICE
+            }
+            PendingIntent.getService(this, 1, pauseIntent, FLAG_UPDATE_CURRENT)
+        } else {
+            val resumeIntent = Intent(this, TrackingService::class.java).apply {
+                action = ACTION_START_OR_RESUME_SERVICE
+            }
+            PendingIntent.getService(this, 2, resumeIntent, FLAG_UPDATE_CURRENT)
+        }
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        //TODO ???
+        // getDeclaredField
+        curNotificationBuilder.javaClass.getDeclaredField("mActions").apply {
+            isAccessible = true
+            set(curNotificationBuilder, ArrayList<NotificationCompat.Action>())
+        }
+
+        curNotificationBuilder = baseNotificationBuilder
+            .addAction(R.drawable.ic_pause_black_24dp, notificationActionText, pendingIntent)
+        notificationManager.notify(NOTIFICATION_ID, curNotificationBuilder.build())
     }
 
     @SuppressLint("MissingPermission")
@@ -231,27 +277,38 @@ class TrackingService : LifecycleService() {
             createNotificationChannel(notificationManager = notificationManager)
         }
 
-        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.ic_directions_run_black_24dp)
-            .setContentTitle("Running App")
-            .setContentText("00:00:00")
-            .setContentIntent(getMainActivityPendingIntent())
+        /**
+         * 보일러플레이트 코드?
+         */
+//        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+//            .setAutoCancel(false)
+//            .setOngoing(true)
+//            .setSmallIcon(R.drawable.ic_directions_run_black_24dp)
+//            .setContentTitle("Running App")
+//            .setContentText("00:00:00")
+//            .setContentIntent(getMainActivityPendingIntent())
 
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+        startForeground(NOTIFICATION_ID, baseNotificationBuilder.build())
+
+        timeRunInSeconds.observe(this, Observer {
+            val notification = curNotificationBuilder
+                .setContentText(TrackingUtility.getFormattedStopWatchTime(it * 1000L, false))
+            notificationManager.notify(NOTIFICATION_ID, notification.build())
+        })
     }
 
     // 알림창 버튼 생성, 액션 추가
-    //TODO PendingIntent?
-    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
-        this,
-        0,
-        Intent(this, MainActivity::class.java).also {
-            it.action = ACTION_SHOW_TRACKING_FRAGMENT
-        },
-        FLAG_UPDATE_CURRENT
-    )
+    /**
+     * 보일러플레이트 코드
+     */
+//    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
+//        this,
+//        0,
+//        Intent(this, MainActivity::class.java).also {
+//            it.action = ACTION_SHOW_TRACKING_FRAGMENT
+//        },
+//        FLAG_UPDATE_CURRENT
+//    )
 
     // 채널 만들기
     @RequiresApi(Build.VERSION_CODES.O)
