@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.runningapp.R
+import com.example.runningapp.db.Run
 import com.example.runningapp.services.Polyline
 import com.example.runningapp.services.TrackingService
 import com.example.runningapp.ui.viewModels.MainViewModel
@@ -20,10 +21,14 @@ import com.example.runningapp.util.Constants.POLYLINE_WIDTH
 import com.example.runningapp.util.TrackingUtility
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_tracking.*
+import java.util.*
+import kotlin.math.round
 
 /**
  * @author Daewon
@@ -46,6 +51,8 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
 
     private var menu: Menu? = null
 
+    private var weight = 80f
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -62,6 +69,11 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
 
         btnToggleRun.setOnClickListener {
             toggleRun()
+        }
+
+        btnFinishRun.setOnClickListener {
+            zoomToSeeWholeTrack()
+            endRunAndSaveToDb()
         }
 
         mapView.getMapAsync {
@@ -170,6 +182,48 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
                     MAP_ZOOM
                 )
             )
+        }
+    }
+
+    private fun zoomToSeeWholeTrack() {
+        val bounds = LatLngBounds.Builder()
+        for(polyline in pathPoints) {
+            for(pos in polyline) {
+                bounds.include(pos)
+            }
+        }
+        map?.moveCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds.build(),
+                mapView.width,
+                mapView.height,
+                (mapView.height * 0.05f).toInt()
+            )
+        )
+    }
+
+    private fun endRunAndSaveToDb() {
+        map?.snapshot { bmp ->
+            var distanceInmeters = 0
+            for(polyline in pathPoints) {
+                distanceInmeters += TrackingUtility.calculatePolylineLength(polyline = polyline).toInt()
+            }
+            // round : 소수점 반올림 round(x,y)
+            // double pie = 3.141592...
+            // round(pie) = 3
+            // round(pie, 100.0) = 3.14
+            // round(pie, 1000.0) = 3.142
+            val avgSpeed = round((distanceInmeters / 1000f ) / (curTimeInMillis / 1000f / 60 / 60) * 10 ) / 10f
+            val dateTimestamp = Calendar.getInstance().timeInMillis
+            val caloriesBurned = ((distanceInmeters / 1000f) * weight).toInt()
+            val run = Run(bmp, dateTimestamp, avgSpeed, distanceInmeters, curTimeInMillis, caloriesBurned)
+            viewModel.insertRun(run)
+            Snackbar.make(
+                requireActivity().findViewById(R.id.rootView),
+                "Run saved successfully",
+                Snackbar.LENGTH_LONG
+            ).show()
+            stopRun()
         }
     }
 

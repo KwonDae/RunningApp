@@ -3,6 +3,10 @@ package com.example.runningapp.db
 import androidx.lifecycle.LiveData
 import androidx.room.*
 
+/**
+ * Data Access Object - DAO
+ */
+
 @Dao
 interface RunDAO {
 
