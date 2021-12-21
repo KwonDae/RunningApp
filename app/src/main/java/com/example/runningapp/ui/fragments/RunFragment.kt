@@ -5,11 +5,15 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.runningapp.R
+import com.example.runningapp.adapters.RunAdapter
 import com.example.runningapp.util.Constants.REQUEST_CODE_BACKGROUND_LOCATION_PERMISSION
 import com.example.runningapp.util.Constants.REQUEST_CODE_LOCATION_PERMISSION
 import com.example.runningapp.util.Constants.TAG
@@ -32,11 +36,18 @@ import timber.log.Timber
 class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionCallbacks {
 
     private val viewModel: MainViewModel by viewModels()
+
+    private lateinit var runAdapter: RunAdapter
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requestPermissions()
+        setUpRecyclerView()
+
+        viewModel.runSortedByDate.observe(viewLifecycleOwner, Observer {
+            runAdapter.submitList(it)
+        })
 
         //플로팅 버튼이 클릭되면 Tracking 화면으로 이동
         fab.setOnClickListener {
@@ -51,6 +62,12 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
             }
         }
 
+    }
+
+    private fun setUpRecyclerView() = rvRuns.apply {
+        runAdapter = RunAdapter()
+        adapter = runAdapter
+        layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
     }
 
     // 권한 요청

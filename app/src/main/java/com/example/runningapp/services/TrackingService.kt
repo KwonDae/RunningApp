@@ -169,6 +169,7 @@ class TrackingService : LifecycleService() {
         // 메인 쓰레드에서 시간을 계속 관찰하고 있는건 성능이 좋지 않다.
         CoroutineScope(Dispatchers.Main).launch {
             while (isTracking.value!!) {
+                Timber.tag("isTracking").d("${isTracking.value}")
                 // time difference between now and timeStarted
                 lapTime = System.currentTimeMillis() - timeStarted
 
