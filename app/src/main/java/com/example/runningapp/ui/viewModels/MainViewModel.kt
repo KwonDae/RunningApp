@@ -1,10 +1,12 @@
 package com.example.runningapp.ui.viewModels
 
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.runningapp.db.Run
 import com.example.runningapp.repositories.MainRepository
+import com.example.runningapp.util.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.launch
@@ -25,7 +27,69 @@ class MainViewModel @Inject constructor(
     val mainRepository: MainRepository
 ): ViewModel() {
 
-    val runSortedByDate = mainRepository.getAllRunSortedByDate()
+    private val runsSortedByDate = mainRepository.getAllRunSortedByDate()
+    private val runsSortedByDistance = mainRepository.getAllRunSortedByDistance()
+    private val runsSortedByCaloriesBurned = mainRepository.getAllRunSortedByCaloriesBurned()
+    private val runsSortedByTimeInMillis = mainRepository.getAllRunsSortedByTimeInMillis()
+    private val runsSortedByAvgSpeed = mainRepository.getAllRunSortedByAvgSpeed()
+
+    val runs = MediatorLiveData<List<Run>>()
+
+    var sortType = SortType.DATE
+
+    init {
+        // https://ddangeun.tistory.com/126
+
+        runs.addSource(runsSortedByDate) { result ->
+            if(sortType == SortType.DATE) {
+                result?.let {
+                    runs.value = it
+                }
+            }
+        }
+
+        runs.addSource(runsSortedByDistance) { result ->
+            if(sortType == SortType.DISTANCE) {
+                result?.let {
+                    runs.value = it
+                }
+            }
+        }
+
+        runs.addSource(runsSortedByCaloriesBurned) { result ->
+            if(sortType == SortType.CALORIES_BURNED) {
+                result?.let {
+                    runs.value = it
+                }
+            }
+        }
+
+        runs.addSource(runsSortedByTimeInMillis) { result ->
+            if(sortType == SortType.RUNNING_TIME) {
+                result?.let {
+                    runs.value = it
+                }
+            }
+        }
+
+        runs.addSource(runsSortedByAvgSpeed) { result ->
+            if(sortType == SortType.AVG_SPEED) {
+                result?.let {
+                    runs.value = it
+                }
+            }
+        }
+    }
+
+    fun sortRuns(sortType: SortType) = when(sortType) {
+        SortType.DATE -> runsSortedByDate.value?.let { runs.value = it }
+        SortType.RUNNING_TIME -> runsSortedByTimeInMillis.value?.let { runs.value = it }
+        SortType.DISTANCE -> runsSortedByDistance.value?.let { runs.value = it }
+        SortType.AVG_SPEED -> runsSortedByAvgSpeed.value?.let { runs.value = it }
+        SortType.CALORIES_BURNED -> runsSortedByCaloriesBurned.value?.let { runs.value = it }
+    }.also {
+        this.sortType = sortType
+    }
 
     fun insertRun(run: Run) = viewModelScope.launch {
         mainRepository.insertRun(run)
