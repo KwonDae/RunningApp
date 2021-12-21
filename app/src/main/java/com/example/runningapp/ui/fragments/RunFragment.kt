@@ -23,8 +23,10 @@ import com.example.runningapp.util.TrackingUtility
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_run.*
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * @author Daewon
@@ -39,7 +41,7 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
     private val viewModel: MainViewModel by viewModels()
 
     private lateinit var runAdapter: RunAdapter
-    
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
