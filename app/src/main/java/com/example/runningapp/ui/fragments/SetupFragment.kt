@@ -2,6 +2,7 @@ package com.example.runningapp.ui.fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
@@ -11,10 +12,12 @@ import com.example.runningapp.R
 import com.example.runningapp.util.Constants.KEY_FIRST_TIME_TOGGLE
 import com.example.runningapp.util.Constants.KEY_NAME
 import com.example.runningapp.util.Constants.KEY_WEIGHT
+import com.example.runningapp.util.Constants.TAG
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_setup.*
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -36,6 +39,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Timber.tag(TAG).d("onViewCreated1: $isFirstAppOpen")
         if(!isFirstAppOpen) {
 
             val navOptions = NavOptions.Builder()
@@ -51,7 +55,12 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         tvContinue.setOnClickListener {
             val success = writePersonalDataToSharedPref()
             if(success) {
-                findNavController().navigate(R.id.action_setupFragment_to_runFragment)
+                Timber.tag(TAG).d("onViewCreated2: $isFirstAppOpen")
+                Timber.tag(TAG).d("onViewCreated3: $success")
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(R.id.setupFragment, true)
+                    .build()
+                findNavController().navigate(R.id.action_setupFragment_to_runFragment, savedInstanceState, navOptions)
             } else {
                 Snackbar.make(requireContext(), requireView(), "Please Enter all the firelds", Snackbar.LENGTH_SHORT).show()
             }
@@ -76,6 +85,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             putFloat(KEY_WEIGHT, weight.toFloat())
             putBoolean(KEY_FIRST_TIME_TOGGLE, false)
         }
+
         val toolbarText = "Let's go, $name!"
         requireActivity().tvToolbarTitle.text = toolbarText
         return true

@@ -5,6 +5,7 @@ import androidx.fragment.app.viewModels
 import com.example.runningapp.R
 import com.example.runningapp.ui.viewModels.MainViewModel
 import com.example.runningapp.ui.viewModels.StatisticsViewModel
+import com.example.runningapp.util.TrackingUtility
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -18,4 +19,14 @@ import dagger.hilt.android.AndroidEntryPoint
 class StatisticsFragment : Fragment(R.layout.fragment_statistics) {
 
     private val viewModel: StatisticsViewModel by viewModels()
+
+    private fun subscribeToObservers() {
+        viewModel.totalTimeRun.observe(viewLifecycleOwner) {
+            it?.let {
+                val totalTimeRun = TrackingUtility.getFormattedStopWatchTime(ms = it, includeMillis = false)
+
+
+            }
+        }
+    }
 }

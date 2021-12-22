@@ -3,6 +3,7 @@ package com.example.runningapp.repositories
 import com.example.runningapp.db.Run
 import com.example.runningapp.db.RunDAO
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * @author Daewon
@@ -12,6 +13,7 @@ import javax.inject.Inject
  */
 
 // 앱에서 사용하는 데이터와 그 데이터 통신을 하는 역할
+@Singleton
 class MainRepository @Inject constructor(
     val runDao: RunDAO
 ){
