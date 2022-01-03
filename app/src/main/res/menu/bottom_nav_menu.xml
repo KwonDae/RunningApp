@@ -2,15 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/runFragment"
-        android:title="Your Runs"
-        android:icon="@drawable/ic_launcher_foreground"/>
+        android:title="기록"
+        android:icon="@drawable/ic_run"/>
 
     <item android:id="@+id/statisticsFragment"
-        android:title="Statistics"
-        android:icon="@drawable/ic_launcher_foreground"/>
+        android:title="통계"
+        android:icon="@drawable/ic_graph"/>
 
     <item android:id="@+id/settingsFragment"
-        android:title="Settings"
-        android:icon="@drawable/ic_launcher_foreground"/>
+        android:title="설정"
+        android:icon="@drawable/ic_settings"/>
 
 </menu>

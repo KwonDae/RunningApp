@@ -9,9 +9,11 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        app:boxStrokeColor="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintBottom_toTopOf="@+id/tilWeight"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -28,8 +30,10 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilWeight"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
