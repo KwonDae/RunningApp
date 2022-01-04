@@ -43,8 +43,8 @@ object ServiceModule {
     ): PendingIntent = PendingIntent.getActivity(
         app,
         0,
-        Intent(app, MainActivity::class.java).also {
-            it.action = Constants.ACTION_SHOW_TRACKING_FRAGMENT
+        Intent(app, MainActivity::class.java).apply {
+            action = Constants.ACTION_SHOW_TRACKING_FRAGMENT
         },
         PendingIntent.FLAG_UPDATE_CURRENT
     )

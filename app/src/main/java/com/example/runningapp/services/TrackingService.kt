@@ -222,7 +222,6 @@ class TrackingService : LifecycleService() {
 
     @SuppressLint("MissingPermission")
     private fun updateLocationTracking(isTracking: Boolean) {
-        Timber.d("called")
         if (isTracking) {
             if (TrackingUtility.hasLocationPermissions(this)) {
                 val request = LocationRequest().apply {

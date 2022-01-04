@@ -6,12 +6,13 @@ buildscript {
     ext.roomVersion = "2.3.0"
     ext.lifecycle_version = "2.4.0"
     ext.arch_version = "2.1.0"
+    ext.nav_version = "2.3.5"
 
     dependencies {
         //dagger hilt
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.38.1")
         classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.0"
-
+        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version")
     }
 
 }
