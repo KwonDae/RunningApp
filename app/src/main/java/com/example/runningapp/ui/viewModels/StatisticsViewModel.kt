@@ -1,10 +1,8 @@
 package com.example.runningapp.ui.viewModels
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.example.runningapp.repositories.MainRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.scopes.ViewModelScoped
 import javax.inject.Inject
 
 /**
@@ -16,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
-    val mainRepository: MainRepository
+    mainRepository: MainRepository
 ): ViewModel() {
 
     val totalTimeRun = mainRepository.getTotalTimeInMillis()

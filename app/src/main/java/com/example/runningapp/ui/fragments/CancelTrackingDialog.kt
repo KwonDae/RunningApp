@@ -23,8 +23,8 @@ class CancelTrackingDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Cancel Run?")
-            .setMessage("Are you sure to cancel the current run and delete all its data?")
+            .setTitle("기록 취소")
+            .setMessage("현재 정보를 지우고 중단 하시겠습니까?")
             .setIcon(R.drawable.ic_delete)
             .setPositiveButton("예") { _, _ ->
                 yesListener?.let { yes ->
