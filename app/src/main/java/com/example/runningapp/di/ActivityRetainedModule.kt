@@ -20,7 +20,7 @@ object ActivityRetainedModule {
 //    @FragmentScoped
 //    @Provides
 //    fun provideSharedPreferences(@ApplicationContext app: Context): SharedPreferences =
-//        app.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+//        app.getSharedPreferen`ces(Constants.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     @ActivityRetainedScoped
     @Provides

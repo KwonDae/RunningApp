@@ -1,8 +1,10 @@
 package com.example.runningapp.di
 
 import android.app.PendingIntent
+import android.app.PendingIntent.*
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.runningapp.R
 import com.example.runningapp.ui.MainActivity
@@ -40,14 +42,25 @@ object ServiceModule {
     @Provides
     fun provideMainActivityPendingIntent(
         @ApplicationContext app: Context
-    ): PendingIntent = PendingIntent.getActivity(
-        app,
-        0,
-        Intent(app, MainActivity::class.java).apply {
-            action = Constants.ACTION_SHOW_TRACKING_FRAGMENT
-        },
-        PendingIntent.FLAG_UPDATE_CURRENT
-    )
+    ): PendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.getActivity(
+            app,
+            0,
+            Intent(app, MainActivity::class.java).apply {
+                action = Constants.ACTION_SHOW_TRACKING_FRAGMENT
+            },
+            FLAG_MUTABLE
+        )
+    } else {
+        PendingIntent.getActivity(
+            app,
+            0,
+            Intent(app, MainActivity::class.java).apply {
+                action = Constants.ACTION_SHOW_TRACKING_FRAGMENT
+            },
+            FLAG_UPDATE_CURRENT
+        )
+    }
 
     @ServiceScoped
     @Provides
